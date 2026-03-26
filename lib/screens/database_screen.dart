@@ -26,7 +26,7 @@ class _DatabaseScreenState extends State<DatabaseScreen> {
   final List<DatabaseSection> sections = [
     DatabaseSection(
       id: 'cities',
-      title: 'Mestá a obce a dano a mato a simon',
+      title: 'Mestá a obce a dano a mato a simon a miso',
       description: 'Správa miest a obcí v systéme',
       icon: Icons.location_city_rounded,
       color: Colors.blue,

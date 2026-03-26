@@ -16,6 +16,7 @@ jobs:
           flutter-version: '3.x'
 
       - name: Create .env file
+        shell: bash
         run: |
           echo "FIREBASE_API_KEY=${{ secrets.FIREBASE_API_KEY }}" >> .env
           echo "FIREBASE_APP_ID=${{ secrets.FIREBASE_APP_ID }}" >> .env
