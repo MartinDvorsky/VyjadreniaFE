@@ -37,41 +37,68 @@ import 'screens/login_screen.dart';
 
 import 'package:auto_updater/auto_updater.dart';
 
+import 'dart:io';
+
+void _log(String message) {
+  try {
+    final home = Platform.environment['USERPROFILE'] ?? Platform.environment['HOME'] ?? '.';
+    final file = File('$home/startup_log.txt');
+    file.writeAsStringSync('${DateTime.now()}: $message\n', mode: FileMode.append);
+  } catch (e) {
+    debugPrint('Failed to write to log file: $e');
+  }
+}
+
 Future<void> main() async {
+  _log('--- APP START ---');
   try {
     WidgetsFlutterBinding.ensureInitialized();
+    _log('WidgetsFlutterBinding initialized');
     
     debugPrint('🚀 Starting initialization...');
 
     // Kontrola, či máme aspoň základné kľúče (prevencia pádov)
-    if (EnvConfig.firebaseApiKey.isEmpty || EnvConfig.firebaseApiKey.startsWith("'")) {
-       debugPrint('⚠️ VAROVANIE: FIREBASE_API_KEY je prázdny alebo obsahuje úvodzovky!');
+    _log('Checking keys...');
+    if (EnvConfig.firebaseApiKey.isEmpty) {
+       _log('⚠️ WARNING: FIREBASE_API_KEY is EMPTY!');
+    } else {
+       _log('Keys are present (length: ${EnvConfig.firebaseApiKey.length})');
     }
 
     // Firebase (musí byť prvé)
+    _log('Initializing Firebase...');
     await Firebase.initializeApp(
       options: DefaultFirebaseOptions.currentPlatform,
     );
+    _log('✅ Firebase initialized');
     debugPrint('✅ Firebase initialized');
 
     // Supabase (nech to nezabije appku, ak init spadne)
     try {
+      _log('Initializing Supabase...');
       await Supabase.initialize(
         url: SupabaseConfig.supabaseUrl,
         anonKey: SupabaseConfig.supabaseAnonKey,
       );
+      _log('✅ Supabase initialized');
       debugPrint('✅ Supabase initialized');
     } catch (e) {
+      _log('❌ Supabase init error: $e');
       debugPrint('❌ Supabase init error: $e');
     }
 
     if (!kIsWeb) {
+      _log('Setting up desktop window...');
       await setupDesktopWindow();
+       _log('✅ Desktop window setup complete');
        debugPrint('✅ Desktop window setup complete');
     }
 
+    _log('Running app...');
     runApp(const MyApp());
   } catch (e, stack) {
+    _log('💥 FATAL ERROR during startup: $e');
+    _log('Stack: $stack');
     debugPrint('💥 FATAL ERROR during startup: $e');
     debugPrint('$stack');
     
@@ -108,6 +135,8 @@ Future<void> main() async {
                 const SizedBox(height: 16),
                 Text('Verzia: ${DefaultFirebaseOptions.currentPlatform.apiKey.length > 5 ? "Kľúče sú prítomné" : "Kľúče sú PRÁZDNE"}',
                   style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                const SizedBox(height: 12),
+                const Text('Log nájdete v: %USERPROFILE%\\startup_log.txt', style: TextStyle(fontSize: 10, color: Colors.blueGrey)),
               ],
             ),
           ),
