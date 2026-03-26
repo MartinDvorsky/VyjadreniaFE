@@ -31,13 +31,12 @@ jobs:
       - name: Build Windows
         run: flutter build windows --release --dart-define-from-file=.env
 
-      - name: ZIP build
-        run: |
-          Compress-Archive -Path build/windows/x64/runner/Release/* -DestinationPath app.zip
+      - name: Compile Inno Setup Installer
+        run: '& "C:\Program Files (x86)\Inno Setup 6\iscc.exe" installer.iss'
 
       - name: Create Release
         uses: softprops/action-gh-release@v1
         with:
-          files: app.zip
+          files: dist/Vyjadrenia_Installer.exe
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
