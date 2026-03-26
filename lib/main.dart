@@ -40,11 +40,19 @@ import 'package:auto_updater/auto_updater.dart';
 Future<void> main() async {
   try {
     WidgetsFlutterBinding.ensureInitialized();
+    
+    debugPrint('🚀 Starting initialization...');
+
+    // Kontrola, či máme aspoň základné kľúče (prevencia pádov)
+    if (EnvConfig.firebaseApiKey.isEmpty || EnvConfig.firebaseApiKey.startsWith("'")) {
+       debugPrint('⚠️ VAROVANIE: FIREBASE_API_KEY je prázdny alebo obsahuje úvodzovky!');
+    }
 
     // Firebase (musí byť prvé)
     await Firebase.initializeApp(
       options: DefaultFirebaseOptions.currentPlatform,
     );
+    debugPrint('✅ Firebase initialized');
 
     // Supabase (nech to nezabije appku, ak init spadne)
     try {
@@ -52,12 +60,14 @@ Future<void> main() async {
         url: SupabaseConfig.supabaseUrl,
         anonKey: SupabaseConfig.supabaseAnonKey,
       );
+      debugPrint('✅ Supabase initialized');
     } catch (e) {
       debugPrint('❌ Supabase init error: $e');
     }
 
     if (!kIsWeb) {
       await setupDesktopWindow();
+       debugPrint('✅ Desktop window setup complete');
     }
 
     runApp(const MyApp());
@@ -68,23 +78,36 @@ Future<void> main() async {
     runApp(MaterialApp(
       debugShowCheckedModeBanner: false,
       home: Scaffold(
+        backgroundColor: const Color(0xFF1E1E1E),
         body: Center(
-          child: Padding(
-            padding: const EdgeInsets.all(24.0),
+          child: Container(
+            constraints: const BoxConstraints(maxWidth: 500),
+            padding: const EdgeInsets.all(32.0),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(12),
+            ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Icon(Icons.error_outline, color: Colors.red, size: 64),
+                const Icon(Icons.error_outline, color: Colors.red, size: 72),
                 const SizedBox(height: 16),
                 const Text('Chyba pri štarte aplikácie', 
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-                const SizedBox(height: 8),
-                Text(e.toString(), 
-                  textAlign: TextAlign.center, 
-                  style: const TextStyle(color: Colors.red)),
+                  style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
+                const SizedBox(height: 12),
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(color: Colors.grey[100], borderRadius: BorderRadius.circular(8)),
+                  child: Text(e.toString(), 
+                    textAlign: TextAlign.center, 
+                    style: const TextStyle(color: Colors.red, fontFamily: 'monospace')),
+                ),
                 const SizedBox(height: 24),
-                const Text('Tip: Skontrolujte GitHub Secrets (FIREBASE_API_KEY a ostatné).', 
-                  style: TextStyle(fontSize: 13, color: Colors.grey)),
+                const Text('Tip: Skontrolujte GitHub Secrets (FIREBASE_API_KEY a ostatné). Je možné, že heslá sú prázdne alebo obsahujú neočakávané znaky.', 
+                  style: TextStyle(fontSize: 14, color: Colors.grey), textAlign: TextAlign.center),
+                const SizedBox(height: 16),
+                Text('Verzia: ${DefaultFirebaseOptions.currentPlatform.apiKey.length > 5 ? "Kľúče sú prítomné" : "Kľúče sú PRÁZDNE"}',
+                  style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
               ],
             ),
           ),
