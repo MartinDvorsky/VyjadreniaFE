@@ -60,7 +60,8 @@ Future<void> main() async {
     // Kontrola, či máme aspoň základné kľúče (prevencia pádov)
     _log('Checking keys...');
     if (EnvConfig.firebaseApiKey.isEmpty) {
-       _log('⚠️ WARNING: FIREBASE_API_KEY is EMPTY!');
+       _log('❌ FATAL: FIREBASE_API_KEY is EMPTY! GitHub Secrets are likely missing.');
+       throw 'Chýbajú GitHub Secrets (FIREBASE_API_KEY)! Skontrolujte nastavenia repozitára.';
     } else {
        _log('Keys are present (length: ${EnvConfig.firebaseApiKey.length})');
     }
