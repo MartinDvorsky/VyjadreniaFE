@@ -38,36 +38,60 @@ import 'screens/login_screen.dart';
 import 'package:auto_updater/auto_updater.dart';
 
 Future<void> main() async {
-
-
-
-  WidgetsFlutterBinding.ensureInitialized();
-
-
-
-
-
-  // Firebase
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
-
-  // Supabase (nech to nezabije appku, ak init spadne)
   try {
-    await Supabase.initialize(
-      url: SupabaseConfig.supabaseUrl,
-      anonKey: SupabaseConfig.supabaseAnonKey,
+    WidgetsFlutterBinding.ensureInitialized();
+
+    // Firebase (musí byť prvé)
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
     );
-  } catch (e) {
-    debugPrint('❌ Supabase init error: $e');
-  }
 
-  if (!kIsWeb) {  // PRIDAJ TENTO IF
-    await setupDesktopWindow();
-  }
+    // Supabase (nech to nezabije appku, ak init spadne)
+    try {
+      await Supabase.initialize(
+        url: SupabaseConfig.supabaseUrl,
+        anonKey: SupabaseConfig.supabaseAnonKey,
+      );
+    } catch (e) {
+      debugPrint('❌ Supabase init error: $e');
+    }
 
-  // Dôležité: spustiť appku vždy (web aj desktop)
-  runApp(const MyApp());
+    if (!kIsWeb) {
+      await setupDesktopWindow();
+    }
+
+    runApp(const MyApp());
+  } catch (e, stack) {
+    debugPrint('💥 FATAL ERROR during startup: $e');
+    debugPrint('$stack');
+    
+    runApp(MaterialApp(
+      debugShowCheckedModeBanner: false,
+      home: Scaffold(
+        body: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(24.0),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(Icons.error_outline, color: Colors.red, size: 64),
+                const SizedBox(height: 16),
+                const Text('Chyba pri štarte aplikácie', 
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+                const SizedBox(height: 8),
+                Text(e.toString(), 
+                  textAlign: TextAlign.center, 
+                  style: const TextStyle(color: Colors.red)),
+                const SizedBox(height: 24),
+                const Text('Tip: Skontrolujte GitHub Secrets (FIREBASE_API_KEY a ostatné).', 
+                  style: TextStyle(fontSize: 13, color: Colors.grey)),
+              ],
+            ),
+          ),
+        ),
+      ),
+    ));
+  }
 }
 
 class MyApp extends StatelessWidget {
@@ -200,6 +224,27 @@ class _AuthWrapperState extends State<AuthWrapper> {
         String feedURL = 'https://raw.githubusercontent.com/MartinDvorsky/VyjadreniaFE/main/appcast.xml';
 
         await autoUpdater.setFeedURL(feedURL);
+
+        // Nastav listener pre auto-update
+        autoUpdater.onUpdateReady.listen((event) async {
+          debugPrint('✅ Update je pripravený na inštaláciu');
+          // Tu sa rozhodni, či chceš okamžitú inštaláciu alebo oneskorenú
+          // Pre okamžitú inštaláciu:
+          // await autoUpdater.installUpdate();
+        });
+
+        autoUpdater.onUpdateNotAvailable.listen((event) {
+          debugPrint('ℹ️ Žiadna aktualizácia nie je dostupná');
+        });
+
+        autoUpdater.onUpdateDownloaded.listen((event) async {
+          debugPrint('📥 Update bol stiahnutý');
+        });
+
+        autoUpdater.onCheckForUpdates.listen((event) {
+          debugPrint('🔍 Kontrola aktualizácií...');
+        });
+
         await autoUpdater.checkForUpdates(inBackground: true);
       }
     });
