@@ -10,7 +10,7 @@ import 'package:vyjadrenia/utils/supabase_config.dart';
 
 import 'package:vyjadrenia/utils/app_theme.dart';
 import 'package:vyjadrenia/utils/desktop_window.dart';
-
+import 'config/env_config.dart';
 import 'providers/theme_provider.dart';
 import 'providers/auth_provider.dart';
 import 'providers/city_provider.dart';
