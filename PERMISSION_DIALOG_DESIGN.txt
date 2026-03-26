@@ -1,0 +1,133 @@
+// VISUAL PREVIEW - Permission Denied Dialog
+
+/*
+
+┌─────────────────────────────────────────────────┐
+│                                                 │
+│  ╔═══════════════════════════════════════════╗  │
+│  ║  ┌─────────────────────────────────────┐  ║  │
+│  ║  │  🔴 GRADIENT HEADER                │  ║  │  <- Red Gradient (f87171→dc2626)
+│  ║  │  ┌───────────────────────────────┐  │  ║  │
+│  ║  │  │   (animovaná ikona zámku)     │  │  ║  │  <- Scale animation (0.8→1.0)
+│  ║  │  │      🔐                       │  │  ║  │
+│  ║  │  └───────────────────────────────┘  │  ║  │
+│  ║  │                                      │  ║  │
+│  ║  │  Nedostatočné oprávnenia            │  ║  │  <- Nadpis (white, bold)
+│  ║  └─────────────────────────────────────┘  ║  │
+│  ║                                            ║  │
+│  ║  ┌──────────────────────────────────────┐ ║  │
+│  ║  │ Musíte byť prihlásený aby ste mohli │ ║  │  <- Hlavná správa
+│  ║  │ vykonať túto akciu.                 │ ║  │
+│  ║  └──────────────────────────────────────┘ ║  │
+│  ║                                            ║  │
+│  ║  ┌──────────────────────────────────────┐ ║  │
+│  ║  │ ⓘ Pokus: Zmazanie mesta "Prešov"   │ ║  │  <- Action info (amber bg)
+│  ║  └──────────────────────────────────────┘ ║  │
+│  ║                                            ║  │
+│  ║  ┌──────────────────────────────────────┐ ║  │
+│  ║  │ ℹ️ Kontaktujte administrátora pre    │ ║  │  <- Help info (blue bg)
+│  ║  │ pridelenie oprávnení                 │ ║  │
+│  ║  └──────────────────────────────────────┘ ║  │
+│  ║                                            ║  │
+│  ║  ┌──────────────────────────────────────┐ ║  │
+│  ║  │      [    Rozumiem    ]              │ ║  │  <- Red button
+│  ║  └──────────────────────────────────────┘ ║  │
+│  ║                                            ║  │
+│  ╚═══════════════════════════════════════════╝  │
+│                                                 │
+└─────────────────────────────────────────────────┘
+
+VLASTNOSTI:
+✅ Pekný gradient header s ikonou
+✅ Animovaný vstup (Scale + Fade)
+✅ Informačné boxy (Amber - akcia, Blue - help)
+✅ Pekný gradient button
+✅ Zaoblené rohy (border-radius: 16)
+✅ Tieňa pod dialogom (shadow)
+✅ Responsive design
+✅ Light a dark mode support
+
+
+SNACKBAR VARIANT (menej invazívny):
+
+┌────────────────────────────────────────────────────────┐
+│ 🔒 Nedostatočné oprávnenia                            │
+│                                                        │
+│ Nemáte oprávnenie na zmazanie mesta                  │
+│ Pokus: Zmazanie mesta "Prešov"                       │
+│                                                    [×] │
+└────────────────────────────────────────────────────────┘
+
+
+PRÍKLADY PRISPÔSOBOVANIA SPRÁVY:
+
+1. ZMAZANIE:
+   Nadpis: "Chýbajú oprávnenia"
+   Správa: "Nemáte oprávnenie na zmazanie tohto úradu."
+   Akcia: "Zmazanie úradu 'Prešov'"
+
+2. PRIDÁVANIE:
+   Nadpis: "Chýbajú oprávnenia"
+   Správa: "Nemáte oprávnenie na pridávanie nových miest."
+   Akcia: "Pridávanie nového mesta"
+
+3. ÚPRAVA:
+   Nadpis: "Chýbajú oprávnenia"
+   Správa: "Nemáte oprávnenie na úpravu tohto mesta."
+   Akcia: "Úprava mesta 'Prešov'"
+
+4. NIE JE PRIHLÁSENÝ:
+   Nadpis: "Nie ste prihlásený"
+   Správa: "Musíte byť prihlásený aby ste mohli mazať úrady."
+   Akcia: "Zmazanie úradu"
+
+*/
+
+// ANIMÁCIE:
+
+// 1. SCALE ANIMATION (vstupný efekt):
+//    Tween<double>(begin: 0.8, end: 1.0)
+//    Duration: 400ms
+//    Curve: Curves.elasticOut (nice bounce effect)
+
+// 2. FADE ANIMATION:
+//    Tween<double>(begin: 0.0, end: 1.0)
+//    Duration: 400ms
+//    Curve: Curves.easeIn
+
+// 3. IKONA SCALING:
+//    TweenAnimationBuilder (0→1)
+//    Duration: 600ms
+//    Scale transform
+
+// FARBY:
+
+const _redGradient = LinearGradient(
+  begin: Alignment.topLeft,
+  end: Alignment.bottomRight,
+  colors: [
+    Colors.red.shade400,  // #f87171
+    Colors.red.shade600,  // #dc2626
+  ],
+);
+
+const _amberBackground = Colors.amber.shade50;    // #fef3c7
+const _bluBackground = Colors.blue.shade50;       // #eff6ff
+const _buttonColor = Colors.red.shade600;         // #dc2626
+
+// BORDERS:
+
+BorderRadius.circular(16) // Hlavný dialog
+BorderRadius.circular(8)  // Info boxy
+BorderRadius.only(
+  topLeft: Radius.circular(16),
+  topRight: Radius.circular(16),
+) // Header
+
+// SPACING:
+
+const EdgeInsets.all(24)           // Padding dialoga
+const EdgeInsets.symmetric(vertical: 32, horizontal: 24) // Header padding
+const SizedBox(height: 16)         // Spacing medzi prvkami
+const SizedBox(width: 24)          // Spacing medzi prvkami
+

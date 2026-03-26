@@ -1,0 +1,379 @@
+1 generovanie dokumentov
+    1 zadanie mesta
+    2 "zakladne nastavenia" - udaje o stavbe a parsovanie obalke
+    3 "detailne udaje" - vyber uradov a typ ziadosti (ucel)
+    4 zapnutie notifikacie
+    5 nazvy suborov
+    6 generovanie
+
+
+
+postup dalej
+
+skryvanie obrazovky nie je rovnake pre db a generate screen
+
+potom tu je ten error
+A RenderFlex overflowed by 7.3 pixels on the right.
+The relevant error-causing widget was:
+Row Row:file:///C:/TUKE/BP/vyjadrenia/lib/widgets/menu_item_widget.dart:63:24
+
+backend pre projektanta(screen 2 vyberanie opravnenia je zatial napevno)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    zoznam poli
+
+
+    zakladne udaje
+
+    znacka
+    nazov stavby
+    miesto stavby
+    investor default - Východoslovenská distribučná, a. s., Mlynská 31, 042 91 Košice
+
+    technicke udaje
+    kat u - placeholder - len ak je rozne od mesta
+    pocet situacii
+    mierka
+    parcelne cislo
+    list vlastnictva
+    id stavby
+    kod stavby - prednastaveny 2315
+
+
+    Vstupné údaje podľa § 21 Stavebného zákona alebo podľa § 22 Stavebného zákona
+    datum dokumentacie
+    projektant
+    typ ziadosti - dropdown - moznosti - Ohlásenie stavby, Ohlásenie stavebných úprav, Stavebný zámer, Rozhodnutie o zmene stavebného zámeru, Predčasné užívanie stavby, Dočasné užívanie stavby, Kolaudačné osvedčenie, Zmena v užívaní stavby
+    ziadatel - dropdown - moznosti - pravnicka osoba, fyzicka osoba, fyzicka osoba podnikatel
+    subory stavieb - dropdown - moznosti samostatna stavba, subor stavieb
+    proj. dokumentacia - dropdown - moznsoti - ulozena v informacnom systeme, prilozenna listina
+    poplatok - dropdown - moznsoti - nie je prilohou ziadosti, je prilohou ziadosti
+    obejakt data  - da sa pridavat viacej
+    prevadzkovy subor data - da sa pridavat viacej poloziek
+
+
+
+
+    siete checkboxs
+    ORHAZZ - placeholder zaklikni ak sa v tejto stabe riesi nova trafostanica
+    SVP - placeholder zaklikni ak sa na situacii nachdza riaka, jazero alebo vodny tok
+    RUVZ - placeholder zaklikni ak pri tejto stavbe riesime inziniersku cinnost a zaroven trafostanicu
+    mesto/obec - zaklikni ak neriesime pargraf 24
+    ZSR - zaklikni ak stavba zasahuje do ochrannheo pasma alebo krizuje kolaj ZSR
+    cesty I. - zaklikni ak sa na stituacii nachzda cesta I. triedy
+    cesty II. - zaklikni ak sa na stituacii nachzda cesta II. alebo III. triedy
+
+
+
+
+    ZSR ak je nova forma tak ten zeleny formular
+    ZSR ak je stara tak normalne ako doteraz
+
+
+
+
+
+
+AI spracovanie dokumentu obalka stavby
+📋 TEORETICKÝ PRÍSTUP - ARCHITEKTÚRA SYSTÉMU
+1. VRSTVOVÁ ARCHITEKTÚRA (Separation of Concerns)
+Prečo: Každá vrstva má svoju zodpovednosť, ľahko sa testuje a rozširuje.
+Vrstva 1: Configuration Layer
+
+Účel: Centralizovaná konfigurácia (API keys, modely, parametre)
+Triedy:
+
+AISettings - obsahuje všetky nastavenia z .env súboru
+get_ai_settings() - singleton pattern pre prístup ku konfigurácii
+
+
+Prečo singleton: Zabezpečíš že konfigurácia sa načíta len raz
+
+Vrstva 2: Data Layer (Schemas)
+
+Účel: Definícia dátových štruktúr, validácia
+Triedy:
+
+ExtractionRequest - čo prichádza od klienta
+ExtractionResponse - čo vraciaš klientovi
+ExtractedData - štruktúra extrahovaných dát
+DodavatelInfo, Polozka, atď. - vnorené objekty
+
+
+Prečo Pydantic: Automatická validácia, JSON serialization, type hints
+
+Vrstva 3: Client Layer
+
+Účel: Komunikácia s externými API (OpenAI)
+Triedy:
+
+OpenAIClient - wrapper okolo OpenAI API
+Metódy: extract_structured_data(), _build_prompt()
+
+
+Funkcie:
+
+Retry logic - ak API zlyhá, skús 3x s exponenciálnym čakaním
+Prompt engineering - few-shot learning s príkladmi
+Error handling - čo keď API vráti nevalidný JSON?
+
+
+
+Vrstva 4: Service Layer
+
+Účel: Business logika, orchestrácia
+Triedy:
+
+AIExtractionService - hlavná služba
+Metódy: extract(), _calculate_cost(), _log_metrics()
+
+
+Zodpovednosti:
+
+Volá OpenAIClient
+Počíta metriky (čas, tokeny, cena)
+Loguje všetko do súborov
+Validuje výstupy
+
+
+
+Vrstva 5: API Layer
+
+Účel: REST endpoints pre klienta
+Endpoints:
+
+POST /api/v1/extraction/text - pošli text, dostaň JSON
+POST /api/v1/extraction/file - upload súboru
+
+
+FastAPI features:
+
+Automatická validácia cez Pydantic
+Swagger dokumentácia zadarmo
+Async/await pre performance
+
+
+
+
+🧪 TESTOVANIE A EVALUÁCIA
+2. GROUND TRUTH DATASET
+Účel: Máš referenčné dáta na porovnanie
+Štruktúra:
+
+Testovacie dokumenty - 20-50 reálnych príkladov
+Expected outputs - manuálne overené správne odpovede
+Metadata - obtiažnosť (easy/medium/hard), typ dokumentu
+
+Kategórie testov:
+
+Jednoduché - základná faktúra s pár poliami
+Stredné - komplexnejšie dokumenty, viac položiek
+Ťažké - neúplné dáta, neštandardný formát
+Edge cases - chýbajúce polia, divné formátovanie
+
+
+3. RAGAS FRAMEWORK (Pre bakalárku perfektné!)
+Čo je RAGAS: Framework na evaluáciu AI systémov, hlavne RAG (Retrieval Augmented Generation)
+Metriky ktoré použiješ:
+Faithfulness (Vernosť)
+
+Meria: Nekonfabuluje AI? Extrahuje len to čo je v dokumente?
+Skóre: 0.0 - 1.0 (1.0 = perfektné)
+Pre bakalárku: Dokážeš že AI nevymýšľa dáta
+
+Answer Relevancy (Relevantnosť)
+
+Meria: Je odpoveď relevantná k zadaniu?
+Dôležité pre: Či AI extrahuje správne veci
+
+Answer Correctness (Správnosť)
+
+Meria: Zhoda s ground truth
+Porovnáva: Tvoj expected output vs AI output
+Key metrika pre bakalárku
+
+Context Precision (Presnosť kontextu)
+
+Meria: Používa AI len relevantné časti dokumentu?
+
+Ako RAGAS funguje:
+
+Máš dokument (context)
+Máš question ("extrahuj faktúru")
+Máš AI answer (extrahované JSON)
+Máš ground truth (správna odpoveď)
+RAGAS automaticky vypočíta skóre
+
+
+4. CUSTOM METRIKY (Pre bakalárku bonus body)
+Field-level accuracy:
+
+Koľko % polí je správne?
+Napr. datum správne v 95% prípadov, ale IČO len v 80%
+
+Token efficiency:
+
+Koľko tokenov spotrebuje jeden dokument?
+Sleduj cost over time
+
+Response time:
+
+Priemerný čas odpovede
+95th percentile (väčšina requestov rýchlejšia než X sekúnd)
+
+Error categories:
+
+Parsing errors (nevalidný JSON)
+Missing fields (chýbajúce polia)
+Wrong format (zlý dátumový formát)
+Hallucinations (vymyslené dáta)
+
+
+📊 EXPERIMENTS A POROVNANIA
+5. ITERATÍVNE ZLEPŠOVANIE (Pre bakalárku - ukáž postup)
+Experiment 1: Baseline (Základ)
+
+Jednoduchý prompt bez príkladov
+Len "extrahuj dáta z tohto dokumentu"
+Očakávaný výsledek: ~60-70% presnosť
+
+Experiment 2: Few-shot Learning
+
+Pridáš 2-3 príklady do promptu
+Ukážeš AI ako má výstup vyzerať
+Očakávaný výsledek: ~80-85% presnosť
+Pre bakalárku: Grafy porovnania baseline vs few-shot
+
+Experiment 3: Chain-of-Thought
+
+Povieš AI aby "rozmýšľalo nahlas"
+"Najprv nájdi číslo faktúry, potom dátum..."
+Očakávaný výsledok: ~85-90% presnosť
+Trade-off: Viac tokenov = vyššia cena
+
+Experiment 4: Fine-tuning modelu
+
+Natrénuješ vlastný model na tvojich dátach
+Náročné ale efektné pre bakalárku
+Porovnáš cost: GPT-4 vs fine-tuned GPT-3.5
+
+
+📈 VIZUALIZÁCIA VÝSLEDKOV
+6. ČO UKÁZAŤ V BAKALÁRKE
+Tabuľky:
+
+Comparison table: Baseline vs Few-shot vs CoT
+Metriky: Accuracy, F1-score, Cost per document, Avg response time
+
+Grafy:
+
+Bar chart - Presnosť podľa typu dokumentu
+Line chart - Cost over time (pri rôznych prístupoch)
+Confusion matrix - Kde AI robí chyby
+Box plot - Response time distribution
+
+Case studies:
+
+3-5 príkladov kde:
+
+AI uspelo perfektne
+AI urobilo chybu (analyzuj prečo)
+Neštandardný dokument (ako si s tým poradilo)
+
+
+
+
+🔒 BEZPEČNOSŤ A BEST PRACTICES
+7. SECURITY CONSIDERATIONS
+API Key Management:
+
+NIKDY v kóde alebo Gitе
+Len v .env súbore na serveri
+Flutter volá tvoj backend, nie priamo OpenAI
+
+Rate Limiting:
+
+Obmedz koľko requestov môže user urobiť
+Predchádzaj zneužitiu (niekto by mohol spotrebovať tvoj OpenAI kredit)
+
+Input Validation:
+
+Max veľkosť dokumentu (napr. 50 000 znakov)
+Sanitization (odstráň škodlivý kód)
+
+Audit Log:
+
+Každý request zaloguj
+Kto, kedy, čo extrahoval
+Pre debugging a security
+
+
+📝 ŠTRUKTÚRA BAKALÁRSKEJ PRÁCE
+8. KAPITOLY S AI EXTRACTIONOM
+Kapitola 4: Implementácia AI extrakcie
+4.1 Architektúra systému
+
+Diagram vrstiev
+Popis každej vrstvy
+
+4.2 Integrácia OpenAI API
+
+Prečo GPT-4o-mini
+Prompt engineering stratégie
+
+4.3 Zabezpečenie a optimalizácia
+
+Retry logic, caching, rate limiting
+
+Kapitola 5: Testovanie a evaluácia
+5.1 Metodológia testovania
+
+Ground truth dataset (20-50 dokumentov)
+RAGAS framework
+
+5.2 Experimenty
+
+Baseline vs Few-shot vs Chain-of-Thought
+Tabuľky výsledkov
+
+5.3 Analýza výsledkov
+
+Grafy presnosti
+Cost analysis
+Error analysis
+
+5.4 Diskusia
+
+Kde AI funguje najlepšie
+Limitácie
+Návod na zlepšenie
+
+Kapitola 6: Záver
+6.1 Zhodnotenie
+
+Dosiahnuté ciele
+Prínos práce
+
+6.2 Budúce rozšírenia
+
+Fine-tuning vlastného modelu
+Podpora PDF, obrázkov (OCR)
+Multi-language support
+
+
+
