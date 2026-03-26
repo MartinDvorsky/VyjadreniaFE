@@ -219,32 +219,10 @@ class _AuthWrapperState extends State<AuthWrapper> {
       // Auth check
       context.read<AuthProvider>().checkAuthStatus();
 
-
       if (!kIsWeb) {
         String feedURL = 'https://raw.githubusercontent.com/MartinDvorsky/VyjadreniaFE/main/appcast.xml';
 
         await autoUpdater.setFeedURL(feedURL);
-
-        // Nastav listener pre auto-update
-        autoUpdater.onUpdateReady.listen((event) async {
-          debugPrint('✅ Update je pripravený na inštaláciu');
-          // Tu sa rozhodni, či chceš okamžitú inštaláciu alebo oneskorenú
-          // Pre okamžitú inštaláciu:
-          // await autoUpdater.installUpdate();
-        });
-
-        autoUpdater.onUpdateNotAvailable.listen((event) {
-          debugPrint('ℹ️ Žiadna aktualizácia nie je dostupná');
-        });
-
-        autoUpdater.onUpdateDownloaded.listen((event) async {
-          debugPrint('📥 Update bol stiahnutý');
-        });
-
-        autoUpdater.onCheckForUpdates.listen((event) {
-          debugPrint('🔍 Kontrola aktualizácií...');
-        });
-
         await autoUpdater.checkForUpdates(inBackground: true);
       }
     });
