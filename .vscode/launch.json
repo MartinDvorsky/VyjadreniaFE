@@ -1,0 +1,25 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Vyjadrenia (Windows)",
+            "request": "launch",
+            "type": "dart",
+            "program": "lib/main.dart",
+            "toolArgs": [
+                "--dart-define-from-file=.env"
+            ],
+            "flutterMode": "debug"
+        },
+        {
+            "name": "Vyjadrenia (Web)",
+            "request": "launch",
+            "type": "dart",
+            "program": "lib/main.dart",
+            "toolArgs": [
+                "--dart-define-from-file=.env"
+            ],
+            "flutterMode": "debug"
+        }
+    ]
+}

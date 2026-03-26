@@ -44,10 +44,8 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
 
-  String feedURL = 'https://raw.githubusercontent.com/TVOJE_MENO/TVOJ_REPO/main/appcast.xml';
 
-  await autoUpdater.setFeedURL(feedURL);
-  await autoUpdater.checkForUpdates();
+
 
   // Firebase
   await Firebase.initializeApp(
@@ -193,8 +191,17 @@ class _AuthWrapperState extends State<AuthWrapper> {
   void initState() {
     super.initState();
 
-    WidgetsBinding.instance.addPostFrameCallback((_) {
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      // Auth check
       context.read<AuthProvider>().checkAuthStatus();
+
+
+      if (!kIsWeb) {
+        String feedURL = 'https://raw.githubusercontent.com/MartinDvorsky/VyjadreniaFE/main/appcast.xml';
+
+        await autoUpdater.setFeedURL(feedURL);
+        await autoUpdater.checkForUpdates(inBackground: true);
+      }
     });
   }
 

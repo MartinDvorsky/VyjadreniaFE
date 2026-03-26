@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'package:vyjadrenia/utils/api_config.dart';
 
 class AuthProvider extends ChangeNotifier {
   final FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
@@ -54,7 +55,7 @@ class AuthProvider extends ChangeNotifier {
 
       // Zavolaj backend API
       final response = await http.get(
-        Uri.parse('http://localhost:8000/api/v1/users/me'),  // ✅ Upraviť URL podľa tvojho backendu
+        Uri.parse('${ApiConfig.baseUrl}${ApiConfig.userMe}'),
         headers: {
           'Authorization': 'Bearer $idToken',
           'Content-Type': 'application/json',

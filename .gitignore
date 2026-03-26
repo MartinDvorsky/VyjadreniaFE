@@ -46,4 +46,4 @@ app.*.map.json
 
 # ⚠️ BEZPEČNOSŤ – Tieto súbory obsahujú tajné kľúče, nesmú byť v gite!
 .env
-lib/firebase_options.dart
+
