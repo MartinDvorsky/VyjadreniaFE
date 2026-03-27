@@ -6,6 +6,10 @@ AppVersion=1.0.2
 AppPublisher=Martin Dvorsky
 DefaultDirName={autopf}\Vyjadrenia
 DisableProgramGroupPage=yes
+; Metadata pre samotný inštalátor (.exe súbor)
+VersionInfoCompany=Martin Dvorsky
+VersionInfoCopyright=Copyright (C) 2025 Martin Dvorsky
+VersionInfoDescription=Inštalátor aplikácie Vyjadrenia
 ; Kde sa vygeneruje výsledný .exe inštalátor
 OutputDir=dist
 OutputBaseFilename=Vyjadrenia_Installer
