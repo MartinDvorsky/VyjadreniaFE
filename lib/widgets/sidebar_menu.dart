@@ -1,8 +1,6 @@
-import 'package:flutter/material.dart';
-import '../models/menu_model.dart';
-import '../utils/app_theme.dart';
 import '../utils/constants.dart';
 import 'menu_item_widget.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 
 class SidebarMenu extends StatelessWidget {
   final List<MenuItem> menuItems;
@@ -97,13 +95,19 @@ class SidebarMenu extends StatelessWidget {
                   color: isDark ? Colors.white60 : AppTheme.textLight,
                 ),
                 const SizedBox(width: 8),
-                Text(
-                  'v${AppConstants.appVersion}',
-                  style: TextStyle(
-                    color: isDark ? Colors.white60 : AppTheme.textLight,
-                    fontSize: 12,
-                    fontWeight: FontWeight.w500,
-                  ),
+                FutureBuilder<PackageInfo>(
+                  future: PackageInfo.fromPlatform(),
+                  builder: (context, snapshot) {
+                    final version = snapshot.hasData ? snapshot.data!.version : '...';
+                    return Text(
+                      'v$version',
+                      style: TextStyle(
+                        color: isDark ? Colors.white60 : AppTheme.textLight,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    );
+                  },
                 ),
                 const Spacer(),
                 Text(

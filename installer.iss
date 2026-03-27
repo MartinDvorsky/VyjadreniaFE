@@ -1,8 +1,12 @@
+#ifndef AppVersion
+  #define AppVersion "1.0.0"
+#endif
+
 [Setup]
 ; Unikátne ID aplikácie - nemeňte ho po prvom vydaní!
 AppId={{5F8B854A-12E6-4FF7-91B6-8C379D96E14B}
 AppName=Vyjadrenia
-AppVersion=1.0.2
+AppVersion={#AppVersion}
 AppPublisher=Martin Dvorsky
 DefaultDirName={autopf}\Vyjadrenia
 DisableProgramGroupPage=yes

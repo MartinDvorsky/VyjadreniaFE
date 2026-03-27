@@ -5,6 +5,7 @@ import '../providers/theme_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:vyjadrenia/utils/app_theme.dart';
 import 'package:vyjadrenia/widgets/ai_usage_widget.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({Key? key}) : super(key: key);
@@ -20,6 +21,22 @@ class _SettingsScreenState extends State<SettingsScreen> {
   bool _emailNotifications = false;
   String _selectedLanguage = 'SK';
   String _dateFormat = 'DD/MM/YYYY';
+  String _appVersion = 'Načítavam...';
+
+  @override
+  void initState() {
+    super.initState();
+    _initPackageInfo();
+  }
+
+  Future<void> _initPackageInfo() async {
+    final info = await PackageInfo.fromPlatform();
+    if (mounted) {
+      setState(() {
+        _appVersion = '${info.version}+${info.buildNumber}';
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -67,7 +84,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             children: [
               _buildInfoTile(
                 title: 'Verzia aplikácie',
-                value: '1.0.0-beta',
+                value: _appVersion,
                 icon: Icons.apps,
               ),
               const Divider(),

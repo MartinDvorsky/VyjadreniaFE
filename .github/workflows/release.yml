@@ -34,8 +34,15 @@ jobs:
       - name: Build Windows
         run: flutter build windows --release --dart-define-from-file=.env
 
+      - name: Extract version from pubspec.yaml
+        id: get_version
+        shell: pwsh
+        run: |
+          $version = Select-String -Path pubspec.yaml -Pattern '^version: (.*)' | ForEach-Object { $_.Matches.Groups[1].Value }
+          echo "VERSION=$version" >> $env:GITHUB_ENV
+
       - name: Compile Inno Setup Installer
-        run: '& "C:\Program Files (x86)\Inno Setup 6\iscc.exe" installer.iss'
+        run: '& "C:\Program Files (x86)\Inno Setup 6\iscc.exe" /DAppVersion=${{ env.VERSION }} installer.iss'
 
       - name: Create Release
         uses: softprops/action-gh-release@v1

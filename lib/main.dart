@@ -273,10 +273,16 @@ class _AuthWrapperState extends State<AuthWrapper> {
       context.read<AuthProvider>().checkAuthStatus();
 
       if (!kIsWeb) {
-        String feedURL = 'https://raw.githubusercontent.com/MartinDvorsky/VyjadreniaFE/main/appcast.xml';
-
-        await autoUpdater.setFeedURL(feedURL);
-        await autoUpdater.checkForUpdates(inBackground: true);
+        try {
+          _log('🔄 Checking for updates...');
+          String feedURL = 'https://raw.githubusercontent.com/MartinDvorsky/VyjadreniaFE/main/appcast.xml';
+          await autoUpdater.setFeedURL(feedURL);
+          await autoUpdater.setScheduledCheckInterval(3600); // Check every hour
+          await autoUpdater.checkForUpdates(inBackground: true);
+          _log('✅ Update check initiated');
+        } catch (e) {
+          _log('❌ Update check failed: $e');
+        }
       }
     });
   }
