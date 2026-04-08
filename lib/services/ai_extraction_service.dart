@@ -1,9 +1,10 @@
-// lib/services/ai_extraction_service.dart
-
-import 'dart:io';
 import 'dart:convert';
+import 'dart:io';
+import 'dart:typed_data';
 import 'package:http/http.dart' as http;
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:file_picker/file_picker.dart';
+import 'package:flutter/foundation.dart';
 import '../models/ai_extraction_models.dart';
 import '../utils/api_config.dart';
 
@@ -32,12 +33,12 @@ class AIExtractionService {
   }
 
   /// Upload súboru a extrakcia dát pomocou AI
-  Future<AIExtractionResponse> extractFromFile(File file) async {
+  Future<AIExtractionResponse> extractFromFile(PlatformFile file) async {
     try {
       // Endpoint pre upload súboru
       final uri = Uri.parse('${ApiConfig.baseUrl}/ai-extraction/api/v1/extraction/file');
 
-      print('📤 Uploading file to AI extraction: ${file.path}');
+      print('📤 Uploading file to AI extraction: ${file.name}');
 
       // Získaj autorizačné hlavičky
       final user = _firebaseAuth.currentUser;
@@ -57,10 +58,20 @@ class AIExtractionService {
       request.headers['Authorization'] = 'Bearer $token';
 
       // Pridaj súbor
+      Uint8List? bytes = file.bytes;
+      if (bytes == null && !kIsWeb && file.path != null) {
+        bytes = await File(file.path!).readAsBytes();
+      }
+
+      if (bytes == null) {
+        throw Exception('Nepodarilo sa načítať dáta súboru');
+      }
+
       request.files.add(
-        await http.MultipartFile.fromPath(
+        http.MultipartFile.fromBytes(
           'file',
-          file.path,
+          bytes,
+          filename: file.name,
         ),
       );
 

@@ -1,7 +1,10 @@
 import 'dart:convert';
 import 'dart:io';
+import 'dart:typed_data';
 import 'package:http/http.dart' as http;
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:file_picker/file_picker.dart';
+import 'package:flutter/foundation.dart';
 import '../utils/api_config.dart';
 
 class SlovenskoSkService {
@@ -52,7 +55,7 @@ class SlovenskoSkService {
   Future<Map<String, dynamic>> submitStatement({
     required int applicationId,
     required String statementXml,
-    required Map<String, File> attachments,
+    required Map<String, PlatformFile> attachments,
   }) async {
     try {
       final uri = Uri.parse(
@@ -101,15 +104,26 @@ class SlovenskoSkService {
           continue;
         }
 
+        // Pridaj prílohy s SPRÁVNYMI názvami
+        Uint8List? bytes = file.bytes;
+        if (bytes == null && !kIsWeb && file.path != null) {
+          bytes = await File(file.path!).readAsBytes();
+        }
+
+        if (bytes == null) {
+          print('⚠️  Nepodarilo sa načítať dáta pre: $beFieldName');
+          continue;
+        }
+
         request.files.add(
-          await http.MultipartFile.fromPath(
-            beFieldName, // ✅ Použijem správny názov fieldu
-            file.path,
-            filename: '${attachmentType}.pdf',
+          http.MultipartFile.fromBytes(
+            beFieldName,
+            bytes,
+            filename: file.name,
           ),
         );
 
-        print('  ✓ Pridaná: $beFieldName (${file.lengthSync()} bytes)');
+        print('  ✓ Pridaná: $beFieldName (${file.size} bytes)');
       }
 
       // Odošli request

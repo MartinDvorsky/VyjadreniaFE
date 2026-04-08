@@ -257,16 +257,10 @@ class _ApplicationCreateDialogState extends State<ApplicationCreateDialog> {
                       TextFormField(
                         controller: _departmentController,
                         decoration: const InputDecoration(
-                          labelText: 'Oddelenie *',
+                          labelText: 'Oddelenie',
                           hintText: 'Napr. Stavebné oddelenie',
                           prefixIcon: Icon(Icons.category, size: 20),
                         ),
-                        validator: (value) {
-                          if (value == null || value.trim().isEmpty) {
-                            return 'Oddelenie je povinné';
-                          }
-                          return null;
-                        },
                       ),
 
                       const SizedBox(height: 24),

@@ -1,10 +1,9 @@
-// lib/utils/download_helper.dart
-
 import 'dart:io';
 import 'package:http/http.dart' as http;
 import 'package:path_provider/path_provider.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../utils/api_config.dart';
 
 class DownloadHelper {
@@ -43,9 +42,12 @@ class DownloadHelper {
 
     print('🌐 Web download URL: $fullUrl');
 
-    // TODO: Implementovať cez dart:html
-    // import 'dart:html' as html;
-    // html.window.open(fullUrl, '_blank');
+    final uri = Uri.parse(fullUrl);
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    } else {
+      throw Exception('Nie je možné otvoriť sťahovací link: $fullUrl');
+    }
 
     return fullUrl;
   }
@@ -98,17 +100,18 @@ class DownloadHelper {
   /// Alternatívna metóda - stiahni do Downloads priečinka
   static Future<String?> downloadToDownloadsFolder(String downloadUrl) async {
     try {
-      // Získaj cestu k Downloads priečinku
       Directory? downloadsDir;
-
-      if (Platform.isAndroid || Platform.isIOS) {
-        downloadsDir = await getApplicationDocumentsDirectory();
-      } else {
-        downloadsDir = await getDownloadsDirectory();
+      
+      if (!kIsWeb) {
+        if (Platform.isAndroid || Platform.isIOS) {
+          downloadsDir = await getApplicationDocumentsDirectory();
+        } else {
+          downloadsDir = await getDownloadsDirectory();
+        }
       }
-
+      
       if (downloadsDir == null) {
-        throw Exception('Nepodarilo sa nájsť Downloads priečinok');
+        throw Exception('Nepodarilo sa nájsť priečinok pre sťahovanie (na webe použite štandardné sťahovanie)');
       }
 
       // Vytvor názov súboru s timestampom
@@ -146,8 +149,9 @@ class DownloadHelper {
     }
   }
 
-  /// Otvor priečinok kde je uložený súbor
   static Future<void> openFileLocation(String filePath) async {
+    if (kIsWeb) return;
+    
     try {
       if (Platform.isWindows) {
         // Windows: explorer /select,"cesta"

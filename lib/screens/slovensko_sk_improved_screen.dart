@@ -9,7 +9,10 @@ import '../providers/step5_data_provider.dart';
 import '../models/application_model.dart';
 import '../services/slovensko_sk_service.dart';
 import '../utils/app_theme.dart';
-import 'dart:io';
+import 'dart:io' show File, Platform;
+import 'dart:typed_data';
+import 'package:flutter/foundation.dart';
+import 'package:desktop_drop/desktop_drop.dart';
 import 'package:file_picker/file_picker.dart';
 
 class SlovenskoSkImprovedScreen extends StatefulWidget {
@@ -42,7 +45,7 @@ class _SlovenskoSkImprovedScreenState extends State<SlovenskoSkImprovedScreen> {
   List<Application> _availableApplications = [];
 
   // KROK 3: Prílohy (mapa: typ → súbor)
-  final Map<String, File> _uploadedAttachments = {};
+  final Map<String, PlatformFile> _uploadedAttachments = {};
   Set<String> _requiredAttachmentTypes = {};
 
   // KROK 4: Progress odosielania
@@ -162,15 +165,54 @@ class _SlovenskoSkImprovedScreenState extends State<SlovenskoSkImprovedScreen> {
       final result = await FilePicker.platform.pickFiles(
         type: FileType.custom,
         allowedExtensions: ['pdf'],
+        withData: kIsWeb,
+        withReadStream: !kIsWeb,
       );
 
-      if (result != null && result.files.single.path != null) {
+      if (result != null) {
         setState(() {
-          _uploadedAttachments[type] = File(result.files.single.path!);
+          _uploadedAttachments[type] = result.files.single;
         });
       }
     } catch (e) {
       _showErrorSnackbar('Chyba pri výbere súboru: $e');
+    }
+  }
+
+  Future<void> _handleDroppedFiles(String type, List<dynamic> files) async {
+    if (files.isEmpty) return;
+
+    try {
+      final xFile = files.first;
+      String name;
+      Uint8List bytes;
+      String? path;
+
+      if (kIsWeb) {
+        bytes = await xFile.readAsBytes();
+        name = xFile.name;
+      } else {
+        path = xFile.path;
+        final file = File(path!);
+        bytes = await file.readAsBytes();
+        name = path.split(Platform.pathSeparator).last;
+      }
+
+      final extension = name.split('.').last.toLowerCase();
+      if (extension != 'pdf') return;
+
+      final platformFile = PlatformFile(
+        name: name,
+        size: bytes.length,
+        bytes: bytes,
+        path: path,
+      );
+
+      setState(() {
+        _uploadedAttachments[type] = platformFile;
+      });
+    } catch (e) {
+      _showErrorSnackbar('Chyba pri spracovaní súboru: $e');
     }
   }
 
@@ -208,7 +250,7 @@ class _SlovenskoSkImprovedScreenState extends State<SlovenskoSkImprovedScreen> {
 
       try {
         // ✅ Priprav prílohy len pre tento úrad - KOMPLETNÝ MAPPING
-        final attachmentsForThisApp = <String, File>{};
+        final attachmentsForThisApp = <String, PlatformFile>{};
 
         // Všetky možné typy príloh
         if (app.technicalSituation && _uploadedAttachments.containsKey('technical_situation')) {
@@ -819,21 +861,24 @@ class _SlovenskoSkImprovedScreenState extends State<SlovenskoSkImprovedScreen> {
     final hasFile = _uploadedAttachments.containsKey(type);
     final file = _uploadedAttachments[type];
 
-    return Card(
-      margin: const EdgeInsets.only(bottom: 16),
-      color: isDark ? AppTheme.darkCard : Colors.white,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-        side: BorderSide(
-          color: hasFile ? Colors.green : (isDark ? Colors.white12 : Colors.grey[300]!),
-          width: hasFile ? 2 : 1,
+    return DropTarget(
+      onDragDone: (detail) => _handleDroppedFiles(type, detail.files),
+      child: Card(
+        margin: const EdgeInsets.only(bottom: 16),
+        color: isDark ? AppTheme.darkCard : Colors.white,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+          side: BorderSide(
+            color: hasFile ? Colors.green : (isDark ? Colors.white10 : Colors.grey[200]!),
+            width: 2,
+          ),
         ),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(20),
-        child: hasFile
-            ? _buildUploadedFileInfo(type, label, file!, isDark)
-            : _buildUploadPrompt(type, label, description, isDark),
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: hasFile
+              ? _buildUploadedFileInfo(type, label, _uploadedAttachments[type]!, isDark)
+              : _buildUploadPrompt(type, label, description, isDark),
+        ),
       ),
     );
   }
@@ -882,9 +927,9 @@ class _SlovenskoSkImprovedScreenState extends State<SlovenskoSkImprovedScreen> {
     );
   }
 
-  Widget _buildUploadedFileInfo(String type, String label, File file, bool isDark) {
-    final fileName = file.path.split('/').last;
-    final fileSize = file.lengthSync();
+  Widget _buildUploadedFileInfo(String type, String label, PlatformFile file, bool isDark) {
+    final fileName = file.name;
+    final fileSize = file.size;
     final fileSizeMB = (fileSize / 1024 / 1024).toStringAsFixed(2);
 
     return Row(

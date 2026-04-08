@@ -6,7 +6,9 @@ import 'package:dotted_border/dotted_border.dart';
 import 'package:provider/provider.dart';
 import 'package:vyjadrenia/providers/city_provider.dart';
 import 'package:vyjadrenia/services/project_designer_service.dart';
-import 'dart:io';
+import 'package:flutter/foundation.dart';
+import 'dart:io' show File, Platform;
+import 'dart:typed_data';
 import 'package:desktop_drop/desktop_drop.dart';
 import '../models/city_model.dart';
 import '../services/ai_extraction_service.dart';
@@ -28,7 +30,7 @@ class _AIExtractionWidgetState extends State<AIExtractionWidget> {
   bool _isLoading = false;
   String? _errorMessage;
   String? _successMessage;
-  File? _selectedFile;
+  PlatformFile? _selectedFile;
   bool _isDragging = false;
 
   Future<void> _pickFile() async {
@@ -36,17 +38,17 @@ class _AIExtractionWidgetState extends State<AIExtractionWidget> {
       final result = await FilePicker.platform.pickFiles(
         type: FileType.custom,
         allowedExtensions: ['pdf', 'docx', 'txt'],
-        withData: false,
-        withReadStream: true,
+        withData: kIsWeb, // Na webe potrebujeme dáta hneď
+        withReadStream: !kIsWeb,
       );
 
-      if (result != null && result.files.single.path != null) {
-        final file = File(result.files.single.path!);
+      if (result != null) {
+        final platformFile = result.files.single;
         setState(() {
-          _selectedFile = file;
+          _selectedFile = platformFile;
           _errorMessage = null;
         });
-        await _processFile(file);
+        await _processFile(platformFile);
       }
     } catch (e) {
       setState(() {
@@ -60,9 +62,22 @@ class _AIExtractionWidgetState extends State<AIExtractionWidget> {
 
     try {
       final xFile = files.first;
-      final path = xFile.path;
+      String name;
+      Uint8List bytes;
+      String? path;
 
-      final extension = path.split('.').last.toLowerCase();
+      if (kIsWeb) {
+        // Na webe čítame bajty priamo z XFile/DropItem
+        bytes = await xFile.readAsBytes();
+        name = xFile.name;
+      } else {
+        path = xFile.path;
+        final file = File(path!);
+        bytes = await file.readAsBytes();
+        name = path.split(Platform.pathSeparator).last;
+      }
+
+      final extension = name.split('.').last.toLowerCase();
       if (!['pdf', 'docx', 'txt'].contains(extension)) {
         setState(() {
           _errorMessage = 'Nepodporovaný formát. Použite PDF, DOCX alebo TXT.';
@@ -70,14 +85,20 @@ class _AIExtractionWidgetState extends State<AIExtractionWidget> {
         return;
       }
 
-      final file = File(path);
+      final platformFile = PlatformFile(
+        name: name,
+        size: bytes.length,
+        bytes: bytes,
+        path: path,
+      );
+
       setState(() {
-        _selectedFile = file;
+        _selectedFile = platformFile;
         _errorMessage = null;
         _isDragging = false;
       });
 
-      await _processFile(file);
+      await _processFile(platformFile);
     } catch (e) {
       setState(() {
         _errorMessage = 'Chyba pri spracovaní súboru: $e';
@@ -86,7 +107,7 @@ class _AIExtractionWidgetState extends State<AIExtractionWidget> {
     }
   }
 
-  Future<void> _processFile(File file) async {
+  Future<void> _processFile(PlatformFile file) async {
     setState(() {
       _isLoading = true;
       _errorMessage = null;

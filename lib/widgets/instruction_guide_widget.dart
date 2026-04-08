@@ -831,19 +831,23 @@ class _InstructionGuideWidgetState extends State<InstructionGuideWidget> {
 
     // Rozdelenie úradov
     final printApplications = step5.applications
-        .where((app) => !step5.isHidden(app.applicationId) && app.submission == 'P')
+        .where((app) => !step5.isHidden(app.applicationId) && app.submission == 'P' && !app.railways)
         .toList();
 
     final electronicApplications = step5.applications
-        .where((app) => !step5.isHidden(app.applicationId) && app.submission == 'E')
+        .where((app) => !step5.isHidden(app.applicationId) && app.submission == 'E' && !app.railways)
         .toList();
 
     final onlineApplications = step5.applications
-        .where((app) => !step5.isHidden(app.applicationId) && app.submission == 'online')
+        .where((app) => !step5.isHidden(app.applicationId) && app.submission == 'online' && !app.railways)
         .toList();
 
     final mailApplications = step5.applications
-        .where((app) => !step5.isHidden(app.applicationId) && app.submission == 'M')
+        .where((app) => !step5.isHidden(app.applicationId) && app.submission == 'M' && !app.railways)
+        .toList();
+
+    final zsrApplications = step5.applications
+        .where((app) => !step5.isHidden(app.applicationId) && app.railways)
         .toList();
 
     // Špeciálne prípady
@@ -906,6 +910,7 @@ class _InstructionGuideWidgetState extends State<InstructionGuideWidget> {
         electronicApplications: electronicApplications,
         onlineApplications: onlineApplications,
         mailApplications: mailApplications,
+        zsrApplications: zsrApplications,
         p56Check: p56Check,
         hasMOSR: hasMOSR,
         hasRUVZ: hasRUVZ,

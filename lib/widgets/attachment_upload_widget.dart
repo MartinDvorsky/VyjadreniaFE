@@ -1,13 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:dotted_border/dotted_border.dart';
-import 'dart:io';
+import 'dart:io' show File, Platform;
+import 'dart:typed_data';
+import 'package:flutter/foundation.dart';
+import 'package:desktop_drop/desktop_drop.dart';
 
 class AttachmentUploadWidget extends StatefulWidget {
   final String label;
   final String description;
-  final File? file;
-  final Function(File?) onFileSelected;
+  final PlatformFile? file;
+  final Function(PlatformFile?) onFileSelected;
 
   const AttachmentUploadWidget({
     Key? key,
@@ -23,37 +26,43 @@ class AttachmentUploadWidget extends StatefulWidget {
 
 class _AttachmentUploadWidgetState extends State<AttachmentUploadWidget> {
   bool _isHovering = false;
+  bool _isDragging = false;
 
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final hasFile = widget.file != null;
 
-    return MouseRegion(
-      onEnter: (_) => setState(() => _isHovering = true),
-      onExit: (_) => setState(() => _isHovering = false),
-      child: GestureDetector(
-        onTap: _pickFile,
-        child: DottedBorder(
-          color: hasFile
-              ? Colors.green
-              : (_isHovering ? Colors.blue : (isDark ? Colors.white38 : Colors.grey)),
-          strokeWidth: 2,
-          dashPattern: const [8, 4],
-          borderType: BorderType.RRect,
-          radius: const Radius.circular(12),
-          child: Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              color: hasFile
-                  ? Colors.green.withOpacity(0.05)
-                  : (_isHovering
-                  ? Colors.blue.withOpacity(0.05)
-                  : (isDark ? Colors.white.withOpacity(0.02) : Colors.grey[50])),
-              borderRadius: BorderRadius.circular(12),
+    return DropTarget(
+      onDragDone: (detail) => _handleDroppedFiles(detail.files),
+      onDragEntered: (detail) => setState(() => _isDragging = true),
+      onDragExited: (detail) => setState(() => _isDragging = false),
+      child: MouseRegion(
+        onEnter: (_) => setState(() => _isHovering = true),
+        onExit: (_) => setState(() => _isHovering = false),
+        child: GestureDetector(
+          onTap: _pickFile,
+          child: DottedBorder(
+            color: hasFile
+                ? Colors.green
+                : ((_isHovering || _isDragging) ? Colors.blue : (isDark ? Colors.white38 : Colors.grey)),
+            strokeWidth: 2,
+            dashPattern: const [8, 4],
+            borderType: BorderType.RRect,
+            radius: const Radius.circular(12),
+            child: Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: hasFile
+                    ? Colors.green.withOpacity(0.05)
+                    : ((_isHovering || _isDragging)
+                    ? Colors.blue.withOpacity(0.05)
+                    : (isDark ? Colors.white.withOpacity(0.02) : Colors.grey[50])),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: hasFile ? _buildFileInfo(isDark) : _buildUploadPrompt(isDark),
             ),
-            child: hasFile ? _buildFileInfo(isDark) : _buildUploadPrompt(isDark),
           ),
         ),
       ),
@@ -66,7 +75,7 @@ class _AttachmentUploadWidgetState extends State<AttachmentUploadWidget> {
         Icon(
           Icons.cloud_upload_outlined,
           size: 48,
-          color: _isHovering ? Colors.blue : (isDark ? Colors.white38 : Colors.grey),
+          color: (_isHovering || _isDragging) ? Colors.blue : (isDark ? Colors.white38 : Colors.grey),
         ),
         const SizedBox(height: 12),
         Text(
@@ -107,8 +116,8 @@ class _AttachmentUploadWidgetState extends State<AttachmentUploadWidget> {
   }
 
   Widget _buildFileInfo(bool isDark) {
-    final fileName = widget.file!.path.split('/').last;
-    final fileSize = widget.file!.lengthSync();
+    final fileName = widget.file!.name;
+    final fileSize = widget.file!.size;
     final fileSizeMB = (fileSize / 1024 / 1024).toStringAsFixed(2);
 
     return Row(
@@ -179,13 +188,55 @@ class _AttachmentUploadWidgetState extends State<AttachmentUploadWidget> {
       final result = await FilePicker.platform.pickFiles(
         type: FileType.custom,
         allowedExtensions: ['pdf'],
+        withData: kIsWeb,
+        withReadStream: !kIsWeb,
       );
 
-      if (result != null && result.files.single.path != null) {
-        widget.onFileSelected(File(result.files.single.path!));
+      if (result != null) {
+        widget.onFileSelected(result.files.single);
       }
     } catch (e) {
       print('❌ File pick error: $e');
+    }
+  }
+
+  Future<void> _handleDroppedFiles(List<dynamic> files) async {
+    if (files.isEmpty) return;
+
+    try {
+      final xFile = files.first;
+      String name;
+      Uint8List bytes;
+      String? path;
+
+      if (kIsWeb) {
+        bytes = await xFile.readAsBytes();
+        name = xFile.name;
+      } else {
+        path = xFile.path;
+        final file = File(path!);
+        bytes = await file.readAsBytes();
+        name = path.split(Platform.pathSeparator).last;
+      }
+
+      final extension = name.split('.').last.toLowerCase();
+      if (extension != 'pdf') {
+        // Tu môžeme pridať nejaký feedback, ak to nie je PDF
+        return;
+      }
+
+      final platformFile = PlatformFile(
+        name: name,
+        size: bytes.length,
+        bytes: bytes,
+        path: path,
+      );
+
+      widget.onFileSelected(platformFile);
+    } catch (e) {
+      print('❌ Handle dropped files error: $e');
+    } finally {
+      setState(() => _isDragging = false);
     }
   }
 }

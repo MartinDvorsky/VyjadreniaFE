@@ -6,7 +6,8 @@ import '../widgets/attachment_upload_widget.dart';
 import '../widgets/submission_progress_widget.dart';
 import '../services/slovensko_sk_service.dart';
 import '../utils/app_theme.dart';
-import 'dart:io';
+import 'package:flutter/foundation.dart';
+import 'package:file_picker/file_picker.dart';
 
 class SlovenskoSkPrototypeScreen extends StatefulWidget {
   const SlovenskoSkPrototypeScreen({Key? key}) : super(key: key);
@@ -22,10 +23,10 @@ class _SlovenskoSkPrototypeScreenState extends State<SlovenskoSkPrototypeScreen>
   final Map<int, SubmissionStatus> _submissionStatuses = {};
 
   // Prílohy (4 povinné)
-  File? _technicalSituationFile;
-  File? _situationFile;
-  File? _situationA3File;
-  File? _broaderRelationsFile;
+  PlatformFile? _technicalSituationFile;
+  PlatformFile? _situationFile;
+  PlatformFile? _situationA3File;
+  PlatformFile? _broaderRelationsFile;
 
   List<Application> _electronicApplications = [];
 
