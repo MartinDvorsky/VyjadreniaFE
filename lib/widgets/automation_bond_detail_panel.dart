@@ -5,6 +5,7 @@ import '../providers/automation_provider.dart';
 import '../utils/permission_helper.dart';
 import '../utils/app_theme.dart';
 import 'automation_condition_add_dialog.dart';
+import 'application_automation_sync_dialog.dart';
 
 class AutomationBondDetailPanel extends StatefulWidget {
   final AutomationBond bond;
@@ -577,6 +578,25 @@ class _AutomationBondDetailPanelState extends State<AutomationBondDetailPanel> {
 
     return Column(
       children: [
+        // Sync Application
+        SizedBox(
+          width: double.infinity,
+          child: ElevatedButton.icon(
+            onPressed: () {
+              showDialog(
+                context: context,
+                builder: (context) => ApplicationAutomationSyncDialog(bond: widget.bond),
+              );
+            },
+            icon: const Icon(Icons.sync, size: 20),
+            label: const Text('Synchronizovať úrad'),
+            style: ElevatedButton.styleFrom(
+              padding: const EdgeInsets.symmetric(vertical: 16),
+              backgroundColor: Colors.teal.shade600,
+            ),
+          ),
+        ),
+        const SizedBox(height: 16),
         // Toggle active/inactive
         SizedBox(
           width: double.infinity,

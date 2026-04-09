@@ -314,6 +314,50 @@ class AutomationService {
     }
   }
 
+  /// Validuj úrad (bez zmien)
+  Future<Map<String, dynamic>> validateApplication(int applicationId) async {
+    try {
+      final uri = Uri.parse('${ApiConfig.baseUrl}/automation/validate/application/$applicationId');
+      print('📤 GET: $uri');
+
+      final headers = await _getAuthHeaders();
+      final response = await http.get(uri, headers: headers);
+
+      if (response.statusCode == 200) {
+        final data = json.decode(utf8.decode(response.bodyBytes));
+        return data;
+      } else {
+        throw Exception('Chyba pri validácii úradu: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('❌ Error in validateApplication: $e');
+      rethrow;
+    }
+  }
+
+  /// Synchronizuj jeden úrad
+  Future<Map<String, dynamic>> syncApplication(int applicationId, {bool removeExtra = false}) async {
+    try {
+      final uri = Uri.parse('${ApiConfig.baseUrl}/automation/sync/application/$applicationId')
+          .replace(queryParameters: {'remove_extra': removeExtra.toString()});
+      print('📤 POST: $uri');
+
+      final headers = await _getAuthHeaders();
+      final response = await http.post(uri, headers: headers);
+
+      if (response.statusCode == 200) {
+        final data = json.decode(utf8.decode(response.bodyBytes));
+        print('✅ Application synced: ${data['application_name']}');
+        return data;
+      } else {
+        throw Exception('Chyba pri synchronizácii úradu: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('❌ Error in syncApplication: $e');
+      rethrow;
+    }
+  }
+
   /// Synchronizuj všetky mestá
   Future<Map<String, dynamic>> syncAllCities({
     bool removeExtra = false,

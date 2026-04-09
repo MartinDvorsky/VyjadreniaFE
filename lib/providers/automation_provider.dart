@@ -279,6 +279,33 @@ class AutomationProvider extends ChangeNotifier {
     }
   }
 
+  /// Validuj úrad (bez zmien)
+  Future<Map<String, dynamic>> validateApplication(int applicationId) async {
+    try {
+      return await _service.validateApplication(applicationId);
+    } catch (e) {
+      _error = e.toString();
+      rethrow;
+    }
+  }
+
+  /// Synchronizuj jeden úrad
+  Future<Map<String, dynamic>> syncApplication(int applicationId, {bool removeExtra = false}) async {
+    _isLoading = true;
+    notifyListeners();
+
+    try {
+      final result = await _service.syncApplication(applicationId, removeExtra: removeExtra);
+      return result;
+    } catch (e) {
+      _error = e.toString();
+      rethrow;
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
   /// Synchronizuj všetky mestá
   Future<Map<String, dynamic>> syncAllCities({
     bool removeExtra = false,
