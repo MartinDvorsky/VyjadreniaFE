@@ -21,4 +21,5 @@ class ApiConfig {
   static const String projectDesigners = '/project-designer';
   static const String textTypes = '/text-type';
   static const String aiChat = '/assistant/form-chat';
+  static const String metricsTotalDocuments = '/metrics/generation/total-documents';
 }

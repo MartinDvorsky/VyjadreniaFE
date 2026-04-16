@@ -1,11 +1,11 @@
 {
-    "name": "vyjadrenia",
-    "short_name": "vyjadrenia",
+    "name": "Vyjadrenia ELPROKAN",
+    "short_name": "Vyjadrenia",
     "start_url": ".",
     "display": "standalone",
-    "background_color": "#0175C2",
-    "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
+    "background_color": "#E31C24",
+    "theme_color": "#E31C24",
+    "description": "Systém pre generovanie vyjadrení ELPROKAN pre projektovanie v energetike.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

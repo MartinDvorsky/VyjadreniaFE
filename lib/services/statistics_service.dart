@@ -62,11 +62,45 @@ class StatisticsService {
     }
   }
 
-  /// Počet generovaných dokumentov (zatiaľ placeholder)
+  /// Počet generovaných dokumentov
   Future<int> _getGeneratedDocumentsCount() async {
-    // TODO: Implementovať keď bude API endpoint
-    // Zatiaľ vráť 0 alebo nejaký mock
-    return 0;
+    try {
+      final headers = await _getAuthHeaders();
+
+      // Ak nie je prihlásený, vráť 0 (alebo skús bez headerov ak je public?)
+      // Väčšinou štatistiky chceme s headerom
+      if (headers == null) {
+        print('⚠️ User nie je prihlásený - Generated docs count = 0');
+        return 0;
+      }
+
+      final uri = Uri.parse('${ApiConfig.baseUrl}${ApiConfig.metricsTotalDocuments}');
+
+      final response = await http.get(uri, headers: headers);
+
+      if (response.statusCode == 200) {
+        final data = json.decode(utf8.decode(response.bodyBytes));
+        // Očakávame že BE vráti číslo priamo alebo objekt s 'count' (podľa typického FastAPI patternu)
+        // Ak vráti {"count": X}, použijeme to:
+        if (data is Map) {
+          if (data.containsKey('total_document_count')) {
+            return data['total_document_count'];
+          } else if (data.containsKey('count')) {
+            return data['count'];
+          }
+        } else if (data is int) {
+          return data;
+        }
+        print('✅ Generated docs count loaded: $data');
+        return int.tryParse(data.toString()) ?? 0;
+      } else {
+        print('⚠️ Chyba pri načítaní počtu dokumentov: ${response.statusCode}');
+        return 0;
+      }
+    } catch (e) {
+      print('❌ Chyba v _getGeneratedDocumentsCount: $e');
+      return 0;
+    }
   }
 
   /// Počet miest/obcí (vyžaduje prihlásenie)
