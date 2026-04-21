@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:vyjadrenia/providers/generate_provider.dart';
 import 'package:vyjadrenia/screens/database_screen.dart';
 import 'package:vyjadrenia/screens/generate_screen.dart';
 import 'package:vyjadrenia/screens/notifications_screen.dart';
@@ -9,10 +11,11 @@ import '../widgets/sidebar_menu.dart';
 import '../widgets/header_widget.dart';
 import '../widgets/feature_card.dart';
 import '../widgets/processing_animations.dart';
-import '../widgets/ai_chat_widget.dart'; // dočasne skryté - AI asistent
-import '../utils/app_theme.dart';
 import '../utils/constants.dart';
 import '../services/statistics_service.dart';
+import '../features/chat/presentation/chat_notifier.dart';
+import '../features/chat/presentation/chat_panel.dart';
+import '../utils/app_theme.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -208,10 +211,26 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ],
           ),
-          
-          // ✅ AI Chat Assistant Widget (dočasne skryté)
-           const AiChatWidget(),
+          // ✅ AI Chat Assistant Widget
+          Consumer<GenerateProvider>(
+            builder: (context, generateProvider, child) {
+              final String screenId = activeMenuId == 'generate'
+                  ? 'step${generateProvider.currentStep + 1}'
+                  : activeMenuId;
+              return ChatPanel(screenId: screenId);
+            },
+          ),
         ],
+      ),
+      floatingActionButton: Consumer<ChatNotifier>(
+        builder: (context, chatNotifier, child) {
+          if (chatNotifier.isPanelOpen) return const SizedBox.shrink();
+          return FloatingActionButton(
+            onPressed: chatNotifier.togglePanel,
+            backgroundColor: AppTheme.primaryRed,
+            child: const Icon(Icons.chat_rounded, color: Colors.white),
+          );
+        },
       ),
     );
   }

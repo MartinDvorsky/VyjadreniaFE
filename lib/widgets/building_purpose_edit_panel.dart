@@ -123,6 +123,48 @@ class _BuildingPurposeEditPanelState extends State<BuildingPurposeEditPanel> {
                         return null;
                       },
                     ),
+                    const SizedBox(height: 12),
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: Colors.blue.withOpacity(0.05),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: Colors.blue.withOpacity(0.2)),
+                      ),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Icon(Icons.info_outline, size: 18, color: Colors.blue.shade600),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: RichText(
+                              text: TextSpan(
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: isDark ? Colors.blue.shade200 : Colors.blue.shade900,
+                                  height: 1.4,
+                                ),
+                                children: const [
+                                  TextSpan(text: 'Tento text bude použitý v univerzálnych šablónach pre inžinierske siete a úrady vo vete:\n\n'),
+                                  TextSpan(
+                                    text: '"Žiadame Vás o vyjadrenie k vyššie uvedenej stavbe prebiehajúcej v katastrálnom území KAT_UXX mesta/obce MESTOXX z hľadiska uloženia inžinierskych sieti, ktoré bude slúžiť pre účely ',
+                                    style: TextStyle(fontStyle: FontStyle.italic),
+                                  ),
+                                  TextSpan(
+                                    text: '[TU ZADANÝ TEXT]',
+                                    style: TextStyle(fontWeight: FontWeight.bold, fontStyle: FontStyle.italic),
+                                  ),
+                                  TextSpan(
+                                    text: '."',
+                                    style: TextStyle(fontStyle: FontStyle.italic),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
                   ],
                 ),
               ),

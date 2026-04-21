@@ -21,6 +21,12 @@ class _TeamMemberSelectorState extends State<TeamMemberSelector> {
   void initState() {
     super.initState();
     _loadTeamMembers();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final provider = context.read<Step2DataProvider>();
+      if (provider.selectedTeamMember == null) {
+        provider.tryAutoFillTeamMember();
+      }
+    });
   }
 
   Future<void> _loadTeamMembers() async {
@@ -86,7 +92,7 @@ class _TeamMemberSelectorState extends State<TeamMemberSelector> {
 
         // Čistý Dropdown bez zbytočného Card obalu
         DropdownButtonFormField<DesignerTeamMember>(
-          initialValue: _teamMembers.any((m) => m.id == step2Provider.selectedTeamMember?.id)
+          value: _teamMembers.any((m) => m.id == step2Provider.selectedTeamMember?.id)
               ? _teamMembers.firstWhere((m) => m.id == step2Provider.selectedTeamMember?.id)
               : null,
           isExpanded: true,

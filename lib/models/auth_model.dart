@@ -38,6 +38,7 @@ class UserInfo {
   final String? fullName;
   final bool isActive;
   final bool isSuperuser;
+  final bool autoFillDesigner;
   final DateTime createdAt;
 
   UserInfo({
@@ -46,6 +47,7 @@ class UserInfo {
     this.fullName,
     required this.isActive,
     required this.isSuperuser,
+    required this.autoFillDesigner,
     required this.createdAt,
   });
 
@@ -56,6 +58,7 @@ class UserInfo {
       fullName: json['full_name'] as String?,
       isActive: json['is_active'] as bool,
       isSuperuser: json['is_superuser'] as bool,
+      autoFillDesigner: json['auto_fill_designer'] == true || json['auto_fill_designer'] == 'true',
       createdAt: DateTime.parse(json['created_at'] as String),
     );
   }

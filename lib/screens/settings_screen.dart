@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:vyjadrenia/utils/app_theme.dart';
 import 'package:vyjadrenia/widgets/ai_usage_widget.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+import 'package:vyjadrenia/services/user_service.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({Key? key}) : super(key: key);
@@ -23,10 +24,24 @@ class _SettingsScreenState extends State<SettingsScreen> {
   String _dateFormat = 'DD/MM/YYYY';
   String _appVersion = 'Načítavam...';
 
+  // Osobné nastavenia
+  bool _autoFillDesignerEnabled = false;
+  final UserService _userService = UserService();
+
   @override
   void initState() {
     super.initState();
     _initPackageInfo();
+    _loadUserSettings();
+  }
+
+  Future<void> _loadUserSettings() async {
+    final autoFill = await _userService.getAutoFillDesigner();
+    if (mounted) {
+      setState(() {
+        _autoFillDesignerEnabled = autoFill;
+      });
+    }
   }
 
   Future<void> _initPackageInfo() async {
@@ -47,6 +62,28 @@ class _SettingsScreenState extends State<SettingsScreen> {
         children: [
           // AI Usage Widget
           const AIUsageWidget(),
+          const SizedBox(height: 32),
+
+          // Tvorba dokumentov / Automation
+          _buildSectionHeader(
+            'Automatizácia a vypĺňanie',
+            Icons.auto_awesome_rounded,
+          ),
+          const SizedBox(height: 16),
+          _buildSettingCard(
+            children: [
+              _buildSwitchTile(
+                title: 'Predvyplniť projektanta, ktorý projekt vypracoval',
+                subtitle: 'Počas generovania (v kroku 2) automaticky vyberie projektanta, ktorý projekt vypracoval na základe vášho e-mailu',
+                value: _autoFillDesignerEnabled,
+                onChanged: (val) async {
+                  setState(() => _autoFillDesignerEnabled = val);
+                  await _userService.setAutoFillDesigner(val);
+                },
+                icon: Icons.person_add_alt_1_rounded,
+              ),
+            ],
+          ),
           const SizedBox(height: 32),
 
           // Appearance Section
@@ -74,33 +111,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
           const SizedBox(height: 32),
 
-          // System Info Section
-          _buildSectionHeader(
-            'Systémové informácie',
-            Icons.info_outline,
-          ),
-          const SizedBox(height: 16),
-          _buildSettingCard(
-            children: [
-              _buildInfoTile(
-                title: 'Verzia aplikácie',
-                value: _appVersion,
-                icon: Icons.apps,
-              ),
-              const Divider(),
-              _buildInfoTile(
-                title: 'Backend API',
-                value: 'v1.0',
-                icon: Icons.api,
-              ),
-              const Divider(),
-              _buildInfoTile(
-                title: 'Database',
-                value: 'PostgreSQL 15',
-                icon: Icons.storage,
-              ),
-            ],
-          ),
+
           const SizedBox(height: 32),
 
           // Support Section

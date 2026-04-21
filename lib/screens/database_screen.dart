@@ -75,7 +75,7 @@ class _DatabaseScreenState extends State<DatabaseScreen> {
     ),
     DatabaseSection(
       id: 'building-purposes',
-      title: 'Účel vyjadrení',
+      title: 'Účel stavby',
       description: 'Kategórie a typy vyjadrení',
       icon: Icons.category_rounded,
       color: Colors.cyan,

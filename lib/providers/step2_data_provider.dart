@@ -5,8 +5,9 @@
 
 import 'package:flutter/foundation.dart';
 import '../models/project_designer_model.dart';
-import '../models/designer_team_member_model.dart'; // ✅ NOVÝ IMPORT
+import '../models/designer_team_member_model.dart';
 import '../models/builder_model.dart';
+import '../services/user_service.dart';
 
 class BuildingObject {
   String id;
@@ -57,6 +58,10 @@ class OperationalSet {
 }
 
 class Step2DataProvider with ChangeNotifier {
+  Step2DataProvider() {
+    tryAutoFillTeamMember();
+  }
+
   // ========== ZÁKLADNÉ ÚDAJE ==========
   String _znacka = '';
   String _nazovStavby = '';
@@ -371,6 +376,20 @@ class Step2DataProvider with ChangeNotifier {
     _objektyStavby = [];
     _prevadzkoveSubory = [];
     notifyListeners();
+    tryAutoFillTeamMember();
+  }
+
+  Future<void> tryAutoFillTeamMember() async {
+    try {
+      final service = UserService();
+      final member = await service.getAutoFillDesignerTeamMember();
+      if (member != null && _selectedTeamMember == null) {
+        _selectedTeamMember = member;
+        notifyListeners();
+      }
+    } catch (e) {
+      // Ignorovať chybu, buď 400 (nastavenie vypnuté) alebo iný problém
+    }
   }
 
   // ========== EXPORT DATA ==========

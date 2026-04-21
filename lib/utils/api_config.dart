@@ -20,6 +20,9 @@ class ApiConfig {
   static const String buildingPurposesSearch = '/building-purposes/search';
   static const String projectDesigners = '/project-designer';
   static const String textTypes = '/text-type';
-  static const String aiChat = '/assistant/form-chat';
+  static const String chatMessage = '/chat/message';
+  static String chatFeedback(String messageId) => '/chat/message/$messageId/feedback';
+  static String chatHistory(String sessionId) => '/chat/session/$sessionId/history';
   static const String metricsTotalDocuments = '/metrics/generation/total-documents';
+
 }

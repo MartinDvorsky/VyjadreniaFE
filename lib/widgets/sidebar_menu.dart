@@ -114,7 +114,7 @@ class SidebarMenu extends StatelessWidget {
                 ),
                 const Spacer(),
                 Text(
-                  '© 2025',
+                  '© 2026',
                   style: TextStyle(
                     color: isDark ? Colors.white60 : AppTheme.textLight,
                     fontSize: 12,

@@ -30,7 +30,7 @@ import 'providers/generate_provider.dart';
 import 'providers/designer_team_member_edit_provider.dart';
 import 'providers/metrics_provider.dart';
 import 'providers/text_type_provider.dart';
-import 'providers/ai_chat_provider.dart';
+import 'features/chat/presentation/chat_notifier.dart';
 
 import 'screens/home_screen.dart';
 import 'screens/login_screen.dart';
@@ -226,8 +226,8 @@ class MyApp extends StatelessWidget {
           create: (_) => TextTypeProvider(),
           lazy: false,
         ),
-        ChangeNotifierProvider<AiChatProvider>(
-          create: (_) => AiChatProvider(),
+        ChangeNotifierProvider<ChatNotifier>(
+          create: (_) => ChatNotifier(),
           lazy: false,
         ),
 

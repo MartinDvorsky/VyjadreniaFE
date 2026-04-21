@@ -665,7 +665,7 @@ class _InstructionGuideWidgetV2State extends State<InstructionGuideWidgetV2> {
           const SizedBox(width: 16),
           Expanded(
             child: Text(
-              'Informačný výpis (V2)',
+              'Návod na odoslanie',
               style: TextStyle(
                 fontSize: isMobile ? 18 : 20,
                 fontWeight: FontWeight.bold,
